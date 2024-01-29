@@ -128,7 +128,7 @@
                 <div class="wrapper">
               <i class="fa" style="font-size:24px">&#xf07a;</i>
              
-             <span id="cartitemnumber"><%=count%></span> </div></a>
+             <span id="cartitemnumber"><% if(typeof count != "undefined"){ %> <%=count%> <%} %></span> </div></a>
            
            
            
@@ -175,7 +175,7 @@
 
  
 
-    <%
+    <% if(typeof cart!="undefined")
     cart.forEach(function(item) { %>
    
       <tr>
@@ -219,7 +219,7 @@
   <section class="cart container mt-2 my-3 py-5">
     <div class="container mt-2 text-center">
       <h4 style="font-family:fantasy;font-size:40px">Payment</h4>
-      <h2>Total: $<%= total %></h2>
+      <h2>Total: <%if(typeof total != "undefined" ){%>$<%= total %> <%}%></h2>
       <div id="paypal-button-container"></div>
     </div>
 
@@ -360,7 +360,7 @@
           return actions.order.create({
             purchase_units: [{
               amount: {
-                value: '<%= total %>' // Can also reference a variable or function
+                value: '<%if(typeof total != "undefined" ){%><%= total %> <%}%>' // Can also reference a variable or function
               }
             }]
           });

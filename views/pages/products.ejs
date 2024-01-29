@@ -172,7 +172,7 @@
       <div class="filters-content">
         <div class="row grid" >
           
-
+        <%if(typeof result!="undefined"){%>
           <% result.forEach((item)=>{  %>
             <div class="col-sm-6 col-lg-4 all <%= item.category %>">
                 <div class="box">
@@ -272,6 +272,7 @@
               </div>
             </div>
             <% }) %>
+            <% } %>
 
         </div>
       </div>

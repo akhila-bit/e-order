@@ -7,7 +7,6 @@ const { Console } = require("console");
 const { json } = require("express/lib/response");
 const { PassThrough } = require("stream");
 const bcrypt = require("bcrypt");
-
 const users = require("./public/js/data").userDB;
 
 mysql.createConnection({
@@ -135,7 +134,7 @@ app.get("/cart", function (req, res) {
   var cart = req.session.cart;
   var total = req.session.total;
   //req.session.total=calculateTotal(cart, req);;
-  var count = req.session.cartitemsnum;
+  var count = req.session.cartitemsnum ? req.session.cartitemsnum : 0;
   // var count = 0;
   //   if (!cart) {
   //     req.session.cart = [];

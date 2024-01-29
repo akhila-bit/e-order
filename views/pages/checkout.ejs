@@ -132,7 +132,7 @@
               <a href="cart" >
                 <div class="wrapper">
               <i class="fa" style="font-size:24px">&#xf07a;</i>
-              <span id="cartitemnumber"><%=count%></span>
+              <span id="cartitemnumber"><% if(typeof count != "undefined"){ %> <%=count%> <%} %></span>
             </div></a>
              
              
@@ -246,7 +246,7 @@
              
 
                 <div class="form-group checkout-btn-container">
-                    <p>Total amount: $<%= total %></p>
+                    <p>Total amount: <% if(typeof total != "undefined"){ %>  $<%= total %> <%}%></p>
                     <input type="submit" class="btn" id="checkout-btn" name="checkout_btn" value="Checkout">
                 </div>
    

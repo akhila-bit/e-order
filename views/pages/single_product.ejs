@@ -125,7 +125,7 @@
               <a href="cart" >
                 <div class="wrapper">
               <i class="fa" style="font-size:24px">&#xf07a;</i>
-              <span id="cartitemnumber"><%=count%></span>
+              <span id="cartitemnumber"> <% if(typeof count != "undefined"){ %> <%= count %><%} %></span>
             </div></a>
   
             <form class="form-inline">
@@ -162,6 +162,7 @@
       <div class="filters-content">
         <div class="row grid">
          
+        <%if(typeof result!="undefined"){%>
 
           <% result.forEach((item)=>{  %>
             <div class="col-sm-12 col-lg-12 all pizza">
@@ -264,6 +265,7 @@
             </div>
             <% }) %>
 
+            <% } %>
 
 
           </div>

@@ -1,7 +1,6 @@
 {
-  "name": "project_",
+  "name": "q",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +17,19 @@
     "firebase": "^9.6.9",
     "mysql": "^2.18.1",
     "request": "^2.88.2"
-  }
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-ejs": "^5.1.0",
+    "gulp-rename": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akhila-bit/E-Order.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akhila-bit/E-Order/issues"
+  },
+  "homepage": "https://github.com/akhila-bit/E-Order#readme",
+  "description": ""
 }

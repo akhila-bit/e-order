@@ -126,7 +126,8 @@
                 <div class="wrapper">
               <i class="fa" style="font-size:24px">&#xf07a;</i>
              
-             <span id="cartitemnumber"><%=count%></span> </div></a>
+             <span id="cartitemnumber">
+              <% if(typeof count != "undefined"){ %> <%=count%> <%} %></span> </div></a>
               <form class="form-inline">
                 <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
                   <i class="fa fa-search" aria-hidden="true"></i>
@@ -164,7 +165,7 @@
       </tr>
    
 
-      <%if(!cart){
+      <%if(typeof cart == "undefined" ){
         %>
         <tr>
           <td>
@@ -237,7 +238,7 @@
         <tr>
           <td>Total</td>
        
-            <td>$ <%= total %></td>
+            <td><%if(typeof total != "undefined" ){%>$ <%= total %> <%}%></td>
           
         </tr>
         

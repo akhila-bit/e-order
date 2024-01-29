@@ -407,7 +407,8 @@
 
       <div class="filters-content">
         <div class="row grid">
-          <% result.forEach((item)=>{  %>
+        <%if(typeof result!="undefined")
+          { result.forEach((item)=>{  %>
           <div class="col-sm-6 col-lg-4 all <%= item.category %>">
             <div class="box">
               <div>
@@ -431,7 +432,6 @@
                     <% } else{ %>
                       <h6>$<%= item.price %></h6>
                      <% } %> 
-
 
 
                      <form action="/add_to_cart" method="post">
@@ -509,6 +509,8 @@
             </div>
           </div>
           <% }) %>
+          <% } %>
+
         </div>
       </div>
       <div class="btn-box">
@@ -608,7 +610,7 @@
               <div>
                 <input type="date" class="form-control" name="date" required>
               </div>
-          <%if(reserved){
+          <%if(typeof reserved !="undefined"){
            
             %>
               <div id="tablebooked" >
