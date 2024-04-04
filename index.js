@@ -1,6 +1,15 @@
 var express = require("express");
 var ejs = require("ejs");
+require("dotenv").config;
+const db = require("./db/db");
+const randomstring = require("randomstring");
+
 var bodyParser = require("body-parser");
+var nodemailer = require("nodemailer");
+// const sendEmail = require('../../utils/email');
+const sendEmail = require("./public/utils/send_mail");
+// const { generateToken, checkToken } = require("./jwt");
+
 var mysql = require("mysql");
 var session = require("express-session");
 const { Console } = require("console");
@@ -8,22 +17,56 @@ const { json } = require("express/lib/response");
 const { PassThrough } = require("stream");
 const bcrypt = require("bcrypt");
 const users = require("./public/js/data").userDB;
+const verify_email = require("./public/template/vemail");
 
-mysql.createConnection({
-  host: "localhost",
-  user: "root",
+const mysqlStore = require("express-mysql-session")(session);
+const PORT = 8081;
+const IN_PROD = process.env.NODE_ENV === "production";
+const TWO_HOURS = 1000 * 60 * 60 * 2;
+const options = {
+  connectionLimit: 10,
   password: "",
-  database: "project_laravel",
-});
+  user: "root",
+  database: "node_project",
+  host: "localhost",
+  port: 3306,
+  createDatabaseTable: false,
+};
+const pool = mysql.createPool(options);
 
-var app = express();
+const sessionStore = new mysqlStore(options);
+// mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "",
+//   database: "project_laravel",
+// });
+const app = express();
+// store: sessionStore,
+
+app.use(
+  session({
+    name: "enter_the_session_name",
+    resave: false,
+    saveUninitialized: false,
+    secret: "secret",
+    store: sessionStore,
+
+    cookie: {
+      maxAge: TWO_HOURS,
+      httpOnly: true, //false access on client devtools document.cookie, xss scipt vulneable
+    },
+  })
+);
+
+// var app = express();
 
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
-app.listen(8081);
+app.listen(PORT);
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({ resave: true, saveUninitialized: true, secret: "secret" }));
+// app.use(session({ resave: true, saveUninitialized: true, secret: "secret" }));
 
 function isProductInCart(cart, id) {
   for (let i = 0; i < cart.length; i++) {
@@ -73,27 +116,56 @@ function calculateTotal_disc(result, req, discount) {
 
   return disc_items1;
 }
+
+var sessionChecker = (req, res, next) => {
+  console.log(`Session Checker: ${req.session.id}`.green);
+  console.log(req.session);
+  if (req.session.userId) {
+    console.log(`Found User Session`.green);
+    next();
+  } else {
+    console.log(`No User Session Found`.red);
+    res.redirect("/");
+  }
+};
 // localhost:8080
 app.get("/", function (req, res) {
-  var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "node_project",
-  });
-  // req.session.reserve = false;
-  con.query("SELECT * FROM products", (err, result) => {
-    req.session.inventory = result;
+  const { userId } = req.session;
+  console.log(req.session.id);
+  //   res.send(`
+  //   <h1> Welcome!</h1>
+  //   ${
+  //     userId
+  //       ? `<a href = '/home'> Home </a>
+  //   <form method='post' action='/logout'>
+  //   <button>Logout</button>
+  //   </form>`
+  //       : `<a href = '/login'> Login </a>
+  //   <a href = '/register'> Register </a>
+  // `
+  //   }
+  //   `);
+  // var con = mysql.createConnection({
+  //   host: "localhost",
+  //   user: "root",
+  //   password: "",
+  //   database: "node_project",
+  // });
+  req.session.reserve = false;
+  // console.log(con);
 
-    res.render("pages/index", {
-      result: result,
-      reserved: req.session.reserve_status,
-      id: req.session.table,
-    });
+  // pool.query("SELECT * FROM products", (err, result) => {
+  //   req.session.inventory = result;
+  //   console.log(req.session);
+
+  res.render("pages/index", {
+    reserved: "false",
+    table_id: "",
   });
+  //   });
 });
 
-app.post("/add_to_cart", function (req, res) {
+app.post("/add_to_cart", sessionChecker, function (req, res) {
   var id = req.body.id;
   var name = req.body.name;
   var price = req.body.price;
@@ -130,7 +202,7 @@ app.post("/add_to_cart", function (req, res) {
   res.redirect("/cart");
 });
 
-app.get("/cart", function (req, res) {
+app.get("/cart", sessionChecker, function (req, res) {
   var cart = req.session.cart;
   var total = req.session.total;
   //req.session.total=calculateTotal(cart, req);;
@@ -167,7 +239,7 @@ app.post("/remove_product", function (req, res) {
   res.redirect("/cart");
 });
 
-app.post("/edit_product_quantity", function (req, res) {
+app.post("/edit_product_quantity", sessionChecker, function (req, res) {
   //get values from inputs
   var id = req.body.id;
   var quantity = req.body.quantity;
@@ -209,7 +281,7 @@ app.post("/edit_product_quantity", function (req, res) {
 // $('ssds').text=count;
 // })
 
-app.get("/checkout", function (req, res) {
+app.get("/checkout", sessionChecker, function (req, res) {
   var total = req.session.total;
   var count = req.session.cartitemsnum;
   res.render("pages/checkout", { total: total, count: count });
@@ -307,7 +379,7 @@ app.post("/place_order", function (req, res) {
                 new Date(),
               ],
             ];
-            con.query(query, [values], (err, result) => {});
+            con.query(query, [values]);
           }
 
           res.redirect("/payment");
@@ -317,25 +389,25 @@ app.post("/place_order", function (req, res) {
   }
 });
 
-app.get("/payment", function (req, res) {
+app.get("/payment", sessionChecker, function (req, res) {
   var total = req.session.total;
   var count = req.session.cartitemsnum;
   var cart = req.session.cart;
-
+  //add local stoage if needed else find in session
   res.render("pages/payment", { total: total, count: count, cart: cart });
 });
 
-app.get("/verify_payment", function (req, res) {
+app.get("/verify_payment", sessionChecker, function (req, res) {
   var transaction_id = req.query.transaction_id;
   var order_id = req.session.order_id;
   var cart = req.session.cart;
 
-  var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "node_project",
-  });
+  // var con = mysql.createConnection({
+  //   host: "localhost",
+  //   user: "root",
+  //   password: "",
+  //   database: "node_project",
+  // });
 
   con.connect((err) => {
     if (err) {
@@ -366,7 +438,7 @@ app.get("/verify_payment", function (req, res) {
   });
 });
 
-app.get("/thank_you", function (req, res) {
+app.get("/thank_you", sessionChecker, function (req, res) {
   var order_id = req.session.order_id;
   req.session.total = undefined;
   req.session.cartitemsnum = undefined;
@@ -382,7 +454,7 @@ app.get("/thank_you", function (req, res) {
   });
 });
 
-app.get("/single_product", function (req, res) {
+app.get("/single_product", sessionChecker, function (req, res) {
   var id = req.query.id;
 
   var con = mysql.createConnection({
@@ -458,6 +530,10 @@ app.get("/about", function (req, res) {
 });
 //////////
 
+app.get("/partials/reset", function (req, res) {
+  res.render("partials/reset");
+});
+///////popup login
 app.get("/partials/modal", function (req, res) {
   res.render("partials/modal");
 });
@@ -524,13 +600,16 @@ app.post("/reservation", function (req, res) {
   // });
 });
 
-app.get("/dashboard", function (req, res) {
+app.get("/dashboard", sessionChecker, function (req, res) {
   var con = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
     database: "node_project",
   });
+  console.log(req.session.id);
+  console.log("sdsd");
+
   // req.session.reserve = false;
   con.query("SELECT * FROM products", (err, result) => {
     req.session.inventory = result;
@@ -538,13 +617,368 @@ app.get("/dashboard", function (req, res) {
     res.render("pages/dashboard", {
       result: result,
       reserved: "false",
-      id: req.session.table,
+      table_id: "",
       // msg:'null'
     });
   });
 });
+app.get("/login", function (req, res) {
+  res.render("pages/index");
+});
+app.post("/login", async (req, res, next) => {
+  try {
+    const email = req.body.userlogin;
+    let password = req.body.passwordlogin;
+    console.log(email);
+    let submittedPass = req.body.passwordlogin;
+    console.log(JSON.stringify(req.body) + " " + "sdsd");
+    console.log(bodyParser.text());
+    submittedPass = submittedPass.toString().replace(/(^,)|(,$)/g, "");
+    user = await db.getUserByEmail(email);
+    console.log(user);
+    if (!user) {
+      // return res.send({
+      //   message: "Invalid email",
+      // });
+      // res.redirect("/partials/modal");
+      res.redirect("/login?error=" + encodeURIComponent("Invalid email"));
+      return;
+    }
+    const passwordMatch = await bcrypt.compare(submittedPass, user.passwor);
+    if (!passwordMatch) {
+      res.redirect("/login?error=" + encodeURIComponent("Invalid password"));
+      // res.render("pages/index", {
+      //   e: "Invalid  password",
+      // });
+      // return res.send({
+      //   message: "Invalid  password",
+      // });
+      return;
+    }
 
-app.post("/register", async (req, res) => {
+    req.session.userId = user.id;
+    req.session.purl = req.url;
+    console.log(req.session.userId);
+    res.redirect("../dashboard");
+  } catch (e) {
+    console.log(e);
+    res.redirect("/login?error=" + encodeURIComponent("Incorrect_Credential"));
+  }
+});
+
+app.get("/verify", async function (req, res) {
+  const id = req.query.id;
+  const token = req.query.token;
+  // res.render("../");
+  // console.log(typeof id);
+  // console.log(typeof token);
+
+  try {
+    // const user = await User.findOne({ _id: req.params.id });
+    i = Number(id);
+    const user = await db.getUser(i);
+    console.log(user);
+    console.log(typeof user.token);
+
+    console.log(token !== user.token);
+    if (!user) return res.status(400).send("Invalid link");
+    if (!(token == user.token)) return res.status(400).send("Invalid link");
+
+    await pool.query(`UPDATE users SET token='' , active=1 where id=${id}`);
+    // await Token.findByIdAndRemove(token._id);
+
+    res.send("email verified sucessfully");
+  } catch (error) {
+    res.status(400).send("An error occured");
+  }
+});
+
+app.post("/reset", async (req, res, next) => {
+  const email = req.body.userlogin;
+  // let password = req.body.passwordlogin;
+  let id;
+  // console.log(email);
+  // console.log(password + "sdsd");
+  try {
+    // if (!email) {
+    //   res.redirect("/?error=" + encodeURIComponent("Please enter email"));
+    // }
+    if (!email) {
+      return res.sendStatus(400);
+    }
+
+    user = await db.getUserByEmail(email);
+
+    if (user) {
+      let token = randomstring.generate();
+      let link = `http://localhost:8081/reset-passwo?id=${user.id}&token=${token}`;
+      let content = `please click to reset <a href="${link}">account</a>`;
+
+      // const html = verify_email(
+      //   `http://localhost:8081/verify/${id}/${token}`
+      // );
+      console.log(content);
+
+      pool.query(`DELETE FROM passwordreset where email="${email}"`);
+
+      pool.query(
+        `INSERT into passwordreset (email,token) VALUES("${email}","${token}")`
+      );
+
+      sendEmail(email, "reset Your password", content);
+
+      res.redirect(
+        "../?success=" +
+          encodeURIComponent("An Email sent to reset please verify")
+      );
+    } else {
+      res.redirect("/?error=" + encodeURIComponent("Invalid email"));
+    }
+  } catch {
+    res.redirect("/?error=" + encodeURIComponent("se error email"));
+  }
+});
+app.get("/reset-passwo", async (req, res, next) => {
+  const token = req.query.token;
+  const id = req.query.id;
+  let i = Number(id);
+
+  try {
+    if (token == undefined) res.status(400).send("An error occured");
+
+    pool.query(
+      "SELECT * FROM passwordreset where token=?",
+      token,
+      async function (e, result, fields) {
+        if (e) {
+          console.log("e to try again in db quey tigge ");
+        }
+        if (result !== undefined && result.length > 0) {
+          const user = await db.getUser(i); //Promise { <pending> } without const
+          // const user= pool.query("SELECT * FROM passwordreset where id=?", id);
+          console.log(user);
+
+          if (user) {
+            res.render("partials/reset", { email: user.email, msg: "" });
+          }
+        } else {
+          res.status(404).send("token doent exist email");
+        }
+      }
+    );
+  } catch {
+    console.error("seerver error");
+  }
+});
+
+app.post("/reset-passwo", async (req, res, next) => {
+  //   const id = req.body.id;
+  //   const user = await db.getUser(id);
+  // console.log(req.body.id)
+  let email = req.body.userlogin;
+
+  try {
+    // res.render("/partials/reset");
+    // req.body.userlogin = user.email; //req.body.email
+    //     // const firstName = req.body.firstName;
+    //     // const lastName = req.body.lastName;
+    //     const email = req.body.userlogin;
+    let password = req.body.passwordlogin;
+    //     let id;
+    //     // console.log(email);
+    //     // console.log(password + "sdsd");
+
+    //     if (!email || !password) {
+    //       return res.sendStatus(400);
+    //     }
+
+    //     user = await db.getUserByEmail(email);
+    //     if(user){
+    console.log(req.body.userlogin);
+    if (req.body.passwordlogin == req.body.passwordconfirm) {
+      let hashPassword = await bcrypt.hash(req.body.passwordlogin, 10);
+      // pool.query(
+      //   `DELETE FROM passwordreset where email="${req.body.userlogin}"`
+      // );
+      console.log(hashPassword);
+      pool.query(
+        `UPDATE users SET passwor="${hashPassword}" where email="${email}"`,
+
+        function (e, result, fields) {
+          if (e) {
+            console.log("e to try again in db quey tigge ");
+          }
+          if (result !== undefined) {
+            res.render("partials/reset", {
+              email: email,
+              msg: "Password update success",
+            });
+          } else {
+            res.render("partials/reset", {
+              email: email,
+              msg: "Password update failed",
+            });
+          }
+        }
+      );
+      // res.redirect(
+      //   "partials/reset?success=" +
+      //     encodeURIComponent("Password update success")
+      // );
+    } else {
+      // res.redirect(
+      //   "/reset-passwo" + encodeURIComponent("sev dint respond try again")
+      // );
+      res.render("partials/reset", {
+        email: email,
+        msg: "password mismatch",
+      });
+      // req.body.userlogin = user.email;
+
+      // res.render("partials/reset", { email: user.email });
+    }
+  } catch (e) {
+    console.log(e);
+    console.log("asas");
+
+    // e = "ssddd";
+    // res.redirect("/register");
+    // res.render("partials/reset", {
+    //   email: email,
+    //   msg: "sev dint respond try again",
+    // });
+    // res.redirect(
+    //   "partials/reset?error=" + encodeURIComponent("sev dint respond try again")
+    // );
+
+    // res.render("/register", { e: " Invalid email or password" });
+
+    // res.sendStatus(400);
+  }
+});
+//     }
+//   }
+
+// })
+app.get("/register", function (req, res) {
+  // console.log(JSON.stringify(err) + "sdsd");
+  // Generate the token
+
+  // res.status(201).json({
+  //   message: "An Email sent to your account please verify",
+  // });
+  res.render("pages/index");
+});
+app.post("/register", async (req, res, next) => {
+  try {
+    // const firstName = req.body.firstName;
+    // const lastName = req.body.lastName;
+    const email = req.body.userlogin;
+    let password = req.body.passwordlogin;
+    let id;
+    // console.log(email);
+    // console.log(password + "sdsd");
+
+    if (!email || !password) {
+      return res.sendStatus(400);
+    }
+
+    user = await db.getUserByEmail(email);
+
+    console.log(user);
+    if (!user) {
+      if (req.body.passwordlogin == req.body.passwordconfirm) {
+        let hashPassword = await bcrypt.hash(req.body.passwordlogin, 10);
+        // const token = await generateToken(payload, {
+        //   expiresIn: "0.5h",
+        //   algorithm: "HS256",
+        // });
+        const token = randomstring.generate();
+        const active = 0;
+        const user = await db
+          .insertUser(email, hashPassword, token, active)
+          .then((insertId) => {
+            id = insertId;
+            return db.getUser(insertId);
+          });
+        // req.session.userId = user.id;
+        console.log(typeof id);
+        let link = `http://localhost:8081/verify?id=${id}&token=${token}`;
+        let content = `please click to confirm <a href="${link}">account</a>`;
+
+        // const html = verify_email(
+        //   `http://localhost:8081/verify/${id}/${token}`
+        // );
+        console.log(content);
+
+        sendEmail(email, "Verify Your Email", content);
+        console.log("ftfg");
+
+        res.redirect(
+          "../register?success=" +
+            encodeURIComponent("An Email sent to your account please verify")
+        );
+        // res.status(201).json({
+        //   message: "An Email sent to your account please verify",
+        // });
+        // res.redirect("../verify?email=" + email);
+      } else {
+        res.redirect(
+          "../register?error=" +
+            encodeURIComponent("Password mismatch, try again")
+        );
+        // res.render("partials/modal", {
+        //   e: "Password mismatch, try again",
+        // });
+      }
+    } else {
+      res.redirect(
+        "../register?error=" +
+          encodeURIComponent("Email already used,please login")
+      );
+      // res.render("partials/modal", {
+      //   e: "Email already used,please login",
+      // });
+
+      // res.redirect("pages/login");
+    }
+  } catch (e) {
+    // console.log(e + "sdsd");
+    // e = "ssddd";
+    // res.redirect("/register");
+    res.redirect("../register?error=" + encodeURIComponent("sev dint respond"));
+
+    // res.render("/register", { e: " Invalid email or password" });
+
+    // res.sendStatus(400);
+  }
+});
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(400).send("Unable to log out");
+    }
+    // sessionStore.close();
+
+    res.clearCookie("enter_the_session_name");
+    res.redirect("/");
+  });
+});
+// var logout = function (req, res, next) {
+//   if (req.session) {
+//     req.session.destroy((err) => {
+//       if (err) {
+//         res.status(400).send("Unable to log out");
+//       } else {
+//         res.send("Logout successful");
+//       }
+//     });
+//   } else {
+//     res.end();
+//   }
+// };
+
+app.post("/regisssdter", async (req, res) => {
   try {
     console.log("User list", users);
     console.log(req.body.userlogin + "aasa" + req.body.passwordlogin + "ssdsd");
@@ -555,10 +989,12 @@ app.post("/register", async (req, res) => {
         let newUser = {
           id: Date.now(),
           email: req.body.userlogin,
-          password: hashPassword,
+          passwor: hashPassword,
           passwordlogin: req.body.passwordlogin,
         };
         users.push(newUser);
+        console.log(req.session);
+        console.log(req.session.id);
 
         console.log("User list", users);
         //    res.send('<div>email used</div>');
@@ -593,44 +1029,45 @@ app.post("/register", async (req, res) => {
       // })
     }
   } catch {
-    res.send("Internal server error");
+    // res.send("Internal server error");
+    res.render("pages/login", { e: " Invalid email or password" });
   }
 
   // app.post('/register/success',function(req, res){
   //             res.send("<div>email used</div>")
 });
-app.post("/login", async (req, res) => {
-  try {
-    console.log(users);
-    let submittedPass = req.body.passwordlogin;
-    submittedPass = submittedPass.toString().replace(/(^,)|(,$)/g, "");
-    console.log(
-      submittedPass + "saas" + req.body.passwordlogin + req.body.userlogin
-    );
-    let foundUser = users.find((data) => req.body.userlogin === data.email);
-    if (foundUser) {
-      console.log(foundUser + "weef");
-      let storedPass = foundUser.password;
+// app.post("/login", async (req, res) => {
+//   try {
+//     console.log(users);
+//     let submittedPass = req.body.passwordlogin;
+//     submittedPass = submittedPass.toString().replace(/(^,)|(,$)/g, "");
+//     console.log(
+//       submittedPass + "saas" + req.body.passwordlogin + req.body.userlogin
+//     );
+//     let foundUser = users.find((data) => req.body.userlogin === data.email);
+//     if (foundUser) {
+//       console.log(foundUser + "weef");
+//       let storedPass = foundUser.password;
 
-      const passwordMatch = await bcrypt.compare(submittedPass, storedPass);
-      if (passwordMatch) {
-        let usrname = foundUser.username;
-        res.redirect("../dashboard");
+//       const passwordMatch = await bcrypt.compare(submittedPass, storedPass);
+//       if (passwordMatch) {
+//         let usrname = foundUser.username;
+//         res.redirect("../dashboard");
 
-        // res.send(`<div align ='center'><h2>login successful</h2></div><br><br><br><div align ='center'><h3>Hello ${usrname}</h3></div><br><br><div align='center'><a href='partials/modal'>logout</a></div>`);
-      } else {
-        res.render("pages/index", { e: " Invalid email or password" });
+//         // res.send(`<div align ='center'><h2>login successful</h2></div><br><br><br><div align ='center'><h3>Hello ${usrname}</h3></div><br><br><div align='center'><a href='partials/modal'>logout</a></div>`);
+//       } else {
+//         res.render("pages/login", { e: " Invalid email or password" });
 
-        //res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align ='center'><a href='./login.html'>login again</a></div>");
-      }
-    } else {
-      // let fakePass = `$2b$$10$ifgfgfgfgfgfgfggfgfgfggggfgfgfga`;
-      // await bcrypt.compare(req.body.passwordlogin, fakePass);
-      res.render("pages/index", { e: "Signup to create a new account" });
+//         //res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align ='center'><a href='./login.html'>login again</a></div>");
+//       }
+//     } else {
+//       // let fakePass = `$2b$$10$ifgfgfgfgfgfgfggfgfgfggggfgfgfga`;
+//       // await bcrypt.compare(req.body.passwordlogin, fakePass);
+//       res.render("pages/index", { e: "Signup to create a new account" });
 
-      // res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align='center'><a href='./login.html'>login again<a><div>");
-    }
-  } catch (e) {
-    res.send("Internal server error" + e);
-  }
-});
+//       // res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align='center'><a href='./login.html'>login again<a><div>");
+//     }
+//   } catch (e) {
+//     res.send("Internal server error" + e);
+//   }
+// });

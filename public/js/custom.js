@@ -166,3 +166,123 @@ $("#check").click(function () {
       document.getElementById("checkout-address").value;
   }
 });
+// window.history.pushState(null, null, "/dashboard");
+// window.onpopstate = function () {
+//   if (window.location.pathname == "/dashboard") {
+//     window.history.pushState(null, null, "/dashboard");
+//     window.history.go(1);
+//   }
+// // };
+//  if (window.location.pathname == "/dashboard") {
+
+// history.pushState(null, null, "dashboard");}
+// if (window.location.pathname == "/dashboard") {
+//   window.onpopstate = function (event) {
+//     window.history.go();
+//   };
+// }
+// window.onbeforeunload = function () {
+//   if (window.location.pathname == "/dashboard") {
+//     return "sorry, Your some work will be lost - really sorry.";
+//   }
+// };
+// function disableBack() {
+// window.history.
+// if (window.location.pathname == "/dashboard") {
+//   window.history.pushState(null, null, window.location.href);
+//   window.history.go(0);
+//   // }
+// }
+// setTimeout("disableBack()", 0);
+
+// window.onpopstate = function () {
+//   window.history.go(1);
+// };
+// function disableBack() {
+//   if (window.location.pathname == "/dashboard") window.history.go();
+// }
+// setTimeout("disableBack()", 0);
+// window.onunload = function () {
+//   null;
+// };
+
+// $("#loginAlert").hide();
+// const urlParams = new URLSearchParams(window.location.search);
+// const myParam = urlParams.get("error");
+// // console.log(
+// //   menuOpen + " 234244 " + document.querySelector(".form-signin").action
+// // );
+// console.log(myParam);
+// if (myParam) {
+//   $("#loginAlert").text(myParam);
+//   $("#loginAlert").show();
+//   if (window.location.pathname == "/login") {
+//     // if (menuBtn.innerText == "Login")
+//     console.log(menuBtn.innerHTML + "sdss");
+
+//     menuBtn.innerHTML = "Login";
+
+//     repeatInput.classList.add("open");
+//     repeatInput_1.classList.add("open");
+//     repeatInput_2.classList.add("open");
+//     document.getElementsByClassName("new_pss_rpt")[0].placeholder = "Password";
+//     $(".new_pss_rpt").attr("name", "passwordlogin");
+//     // menuOpen = true;
+//   }
+// }
+// function preventBack() {
+//   // window.history.go(1);
+//   window.history.pushState(null, null, "/dashboard");
+//   window.addEventListener("popstate", function (event) {
+//     window.history.pushState(null, null, "/dashboard");
+//   });
+// }
+// if (window.location.pathname == "/dashboard") {
+//   setTimeout("preventBack()", 0);
+// }
+// function DisableBackButton() {
+//   window.history.go(1);
+// }
+// // DisableBackButton();
+// if (window.location.pathname == "/dashboard") {
+//   window.onload = DisableBackButton;
+//   window.onpageshow = function (evt) {
+//     if (evt.persisted) DisableBackButton();
+//   };
+//   window.onload = function () {
+//     void 0;
+//   };
+// }
+// if (window.location.pathname == "/dashboard") {
+// history.pushState(null, null, "/dashboard");
+var CurrentPageURL;
+var PreviousPageURL;
+if (CurrentPageURL != null) {
+  PreviousPageURL = CurrentPageURL;
+}
+CurrentPageURL = window.location;
+console.log(CurrentPageURL + "hjh" + PreviousPageURL + "sdsdsd");
+
+// Session["CurrentPageURL"] = Request.Url;
+// window.history.pushState(null, null, "/dashboard");
+
+// window.addEventListener("popstate", function (event) {
+//   window.history.pushState(null, null, "/dashboard");
+// function DisableBackButton() {
+//   window.history.pushState(null, null, "/dashboard");
+//   window.history.go(1);
+// }
+// if (PreviousPageURL == "http://localhost") {
+//   DisableBackButton();
+// }
+// });
+// window.addEventListener("popstate", function (event) {
+//   console.log(document.referrer + "sdsdsd");
+
+//   if (window.location.pathname == "/dashboard") {
+//     if (document.referrer == PreviousPageURL) {
+//       window.history.go(1);
+//     }
+//   }
+//   // window.location = "/dashboard";
+// });

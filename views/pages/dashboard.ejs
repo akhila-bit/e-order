@@ -46,7 +46,7 @@
     
       <div class="container">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="/">
+          <a class="navbar-brand" href="/dashboard">
             <span>
               calmandcode
             </span>
@@ -69,10 +69,10 @@
               </li>
             </ul>
             <div class="user_option">
-             <!--  <a href="" class="user_link">
+              <a href="" class="user_link">
                 <i class="fa fa-user" aria-hidden="true"></i>
-              </a> -->
-              <!-- <a class="cart_link" href="cart">
+              </a>
+              <a class="cart_link" href="cart">
                 <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style="enable-background:new 0 0 456.029 456.029;" xml:space="preserve">
                   <g>
                     <g>
@@ -125,7 +125,7 @@
                   <g>
                   </g>
                 </svg>
-              </a> -->
+              </a>
               <a href="cart" >
               <div class="wrapper">
             <i class="fa" style="font-size:24px">&#xf07a;</i>
@@ -140,10 +140,9 @@
                   
                 </button>
               </form>
-               <a href='' class="order_online"  onclick="toggle_visibility('contact-popup','../partials/modal')">
+               <a href='/logout' class="order_online" >
                
-                Order Online
-              </a> 
+Logout              </a> 
               
               <div class="popup-position showNotes " id="contact-popup" >
                 <%- include('../partials/modal'); %></div>

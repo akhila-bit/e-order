@@ -140,7 +140,7 @@
                   
                 </button>
               </form>
-              <a href='' class="order_online"  onclick="toggle_visibility('contact-popup','../partials/modal')">
+              <a href='' class="order_online"  onclick="toggle_visibility('contact-popup','partials/modal')">
                
                 Order Online
               </a>
@@ -172,7 +172,7 @@
                       Doloremque, itaque aperiam facilis rerum, commodi, temporibus sapiente ad mollitia laborum quam quisquam esse error unde. Tempora ex doloremque, labore, sunt repellat dolore, iste magni quos nihil ducimus libero ipsam.
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="" class="order_online"  onclick="toggle_visibility('contact-popup','partials/modal')">
                         Order Now
                       </a>
                     </div>
@@ -392,11 +392,7 @@
 
  <div class="popup-position " id="contact-popup" >
                 <%- include('../partials/modal'); %></div>
-            </div>
-              <% if (typeof e !== "undefined" ){ %>
-   <div id="showload" style="color: red;text-align: center;    margin-top: -20px;">
-    <p><%= e %> </p> </div>
-    <% e=undefined} %>
+
 
   <!-- end food section -->
 

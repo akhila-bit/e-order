@@ -29,10 +29,14 @@ body {
   .new_pss_rpt.form-control{
     transition: transform .4s !important;
   }
-  .new_pss.form-control.open {
+  .new_pss.form-control.open{
     transform: translateX(-300px) !important;
     opacity: 0%;
   }
+  .new_pss_rpt.form-control.sh{
+    transform: translateX(-300px) !important;
+    opacity: 0%;
+  } 
   .input{
     padding: 2px;
   }
@@ -42,6 +46,12 @@ body {
   .new_pss_rpt.form-control.open{
     transform: translateY(-13px); 
   }
-  #login:hover{
+  #login:hover, #loginreset:hover,#reset:hover{
     color: blue !important;
 } 
+
+
+a {
+  color: black !important;
+  text-decoration: none !important;
+}

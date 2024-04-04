@@ -43,7 +43,7 @@
     <header class="header_section">
       <div class="container">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="/">
+          <a class="navbar-brand" href="/dashboard">
             <span>
               calmandcode
             </span>
@@ -66,9 +66,9 @@
               </li>
             </ul>
             <div class="user_option">
-         <!--      <a href="" class="user_link">
+              <a href="" class="user_link">
                 <i class="fa fa-user" aria-hidden="true"></i>
-              </a> -->
+              </a>
               <!-- <a class="cart_link" href="#">
                 <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style="enable-background:new 0 0 456.029 456.029;" xml:space="preserve">
                   <g>
@@ -140,13 +140,14 @@
                 <span  id="myinput"  type="text" value="">
                   <input  class ="showNotes form-control"  type="text"   id="asd" placeholder="Enter item to search"/> 
                 </span>
+                <span>
                 <button class="btn  my-2 my-sm-0 nav_search-btn " type="submit" id="clickq">
                   <i class="fa fa-search" aria-hidden="true"></i>
                   
-                </button>
+                </button></span>
               </form>
-              <a href="" class="order_online">
-                Order Online
+              <a href="/logout" class="order_online">
+                Logout
               </a>
             </div>
           </div>
@@ -246,7 +247,7 @@
              
 
                 <div class="form-group checkout-btn-container">
-                    <p>Total amount: <% if(typeof total != "undefined"){ %>  $<%= total %> <%}%></p>
+                    <p>Total amount: <% if( total ){ %>  $<%= total %> <%}%></p>
                     <input type="submit" class="btn" id="checkout-btn" name="checkout_btn" value="Checkout">
                 </div>
    

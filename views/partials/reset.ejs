@@ -29,36 +29,49 @@
   <div id="popup-container">
       <h5 style="text-align: center;" >Create account</h5>
 
-  <form class="form-signin" id="myform" action="" method="post" onsubmit="submitaction()">
+  <form class="form-signin" id="myform" action="" method="post" 
+   >
     <div class="input">
-      <input type="text" name="userlogin" class="user form-control" placeholder="Username" required></input>
+      <input  type="hidden" name="userlogin" class="user-set-passw form-control" placeholder="Username" value="<%= email %>" ></input>
     </div>
     <div class="input">
       <input type="password" name="passwordlogin" class="new_pss form-control" placeholder="Password"></input>
     </div>
     <div class="input">
       <input type="password" name="passwordconfirm" class="new_pss_rpt form-control" placeholder="Repeat Password" required></input>
-    </div><p style="font-size:11px;   " >
+    </div>
+      <!--<p style="font-size:11px;   " >
     &nbspAlready have account <a id="login" >select to Login</a> or <a id="reset" > &nbspreset&nbsppassword</a>
-  </p>
+  </p> -->
 
 
  
   <div class="modal-footer">
-    <button class="btn btn-primary btn-block" style="background: #007bff !important;" id="sigmup12">Sign Up </button>    
+    <button class="btn btn-primary btn-block" style="background: #007bff !important;" >Reset password</button>    
   
 <!--     <p><a herf="" onclick="toggle_visibility('contact-popup');">Close Popup</a></p>
  -->
+ &nbsp Please <a id="loginreset" onclick='
+  $(".new_pss").addClass("open");
+  $(".user").addClass("open");
+  $(".new_pss_rpt").addClass("open");
+  document.getElementsByClassName("new_pss_rpt")[0].placeholder = "Password";
+  $(".new_pss_rpt").attr("name", "passwordlogin");
+  $(".btn-primary").text( "Login");   $(".user-set-passw").attr("type", "text"); document.querySelector(".form-signin").action = "/login";
+'>select to Login</a>
 </div>
-<div class="alert alert-success" role="alert" id="loginAlert">
-  <p style="text-align: center;">Incorrect Credential</p>
+<%if(msg ){ %>
+<div class="alert alert-success" role="alert" id="loginasdAlert">
+  <p style="text-align: center;"> <%= msg %>
+  </p>
 </div>
+<%} %>
 </form>
 
 
   </div>
   </div>
-  <script src="../js/loginbootstrap.js"></script>
+  <!-- <script src="../js/loginbootstrap.js"></script> -->
 
 </body>
   </head></html>
