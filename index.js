@@ -389,6 +389,14 @@ app.post("/place_order", function (req, res) {
   }
 });
 
+app.get("/profile", sessionChecker, function (req, res) {
+  var udetail = req.session.pf;
+  console.log("udetail");
+
+  console.log(udetail);
+  //add local stoage if needed else find in session
+  res.render("pages/profile", { user_detail: udetail });
+});
 app.get("/payment", sessionChecker, function (req, res) {
   var total = req.session.total;
   var count = req.session.cartitemsnum;
@@ -396,7 +404,6 @@ app.get("/payment", sessionChecker, function (req, res) {
   //add local stoage if needed else find in session
   res.render("pages/payment", { total: total, count: count, cart: cart });
 });
-
 app.get("/verify_payment", sessionChecker, function (req, res) {
   var transaction_id = req.query.transaction_id;
   var order_id = req.session.order_id;
@@ -657,6 +664,7 @@ app.post("/login", async (req, res, next) => {
     }
 
     req.session.userId = user.id;
+    req.session.pf = user;
     req.session.purl = req.url;
     console.log(req.session.userId);
     res.redirect("../dashboard");
